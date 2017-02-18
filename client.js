@@ -17,7 +17,7 @@ function runTests() {
     if (runtimeArgs.mochaOptions.grep) { mocha.grep(runtimeArgs.mochaOptions.grep) }
     if (runtimeArgs.mochaOptions.invert) { mocha.options.invert = runtimeArgs.mochaOptions.invert }
 
-    mocha.reporter(Meteor.settings.public.CLIENT_TEST_REPORTER || 'spec');
+    mocha.reporter(runtimeArgs.runnerOptions.clientReporter);
 
     // These `window` properties are all used by the client testing script in the
     // browser-tests package to know what is happening.

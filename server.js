@@ -4,18 +4,23 @@ import {} from './lib/collections'
 import { runtimeArgs } from './runtimeArgs'
 
 
-const reporter = process.env.SERVER_TEST_REPORTER || 'spec';
+let serverReporter  = runtimeArgs.runnerOptions.reporter
+if (runtimeArgs.runnerOptions.serverReporter){
+  serverReporter  = runtimeArgs.runnerOptions.serverReporter
+}
 
-// If TEST_BROWSER_DRIVER is not set, assume the app has only server tests
-const shouldRunClientTests = !!process.env.TEST_BROWSER_DRIVER;
+const shouldRunClientTests = runtimeArgs.runnerOptions.runClient
+const shouldRunServerTests = runtimeArgs.runnerOptions.runServer
 
 // pass the current env settings to the client.
 Meteor.startup(() => {
-  Meteor.settings.public = Meteor.settings.public || {};
-  Meteor.settings.public.CLIENT_TEST_REPORTER = process.env.CLIENT_TEST_REPORTER;
+  // Meteor.settings.public = Meteor.settings.public || {};
+  // Meteor.settings.public.runtimeArgs = runtimeArgs
 
-  RuntimeArgs.remove({})//
+  console.log('runtimeArgs', runtimeArgs);
+  RuntimeArgs.remove({})
   RuntimeArgs.insert(runtimeArgs)
+
   Meteor.publish('runtimeArgs', function runtimeArgsPub() {
     return RuntimeArgs.find();
   });
@@ -81,26 +86,30 @@ function exitIfDone(type, failures) {
 
 // Before Meteor calls the `start` function, app tests will be parsed and loaded by Mocha
 function start() {
-  // Run the server tests
-  if (shouldRunClientTests) {
-    printHeader('SERVER');
-  } else {
+  if(shouldRunClientTests && !runtimeArgs.runnerOptions.browserDriver){
     console.log('SKIPPING CLIENT TESTS BECAUSE TEST_BROWSER_DRIVER ENVIRONMENT VARIABLE IS NOT SET');
   }
+  // Run the server tests
+  if( shouldRunServerTests ){
+    printHeader('SERVER');
 
-  // We need to set the reporter when the tests actually run to ensure no conflicts with
-  // other test driver packages that may be added to the app but are not actually being
-  // used on this run.
-  mochaInstance.reporter(reporter);
+    // We need to set the reporter when the tests actually run to ensure no conflicts with
+    // other test driver packages that may be added to the app but are not actually being
+    // used on this run.
+    mochaInstance.reporter(serverReporter);
 
-  //NEW allow runtime grep options to be used in server
-  console.log('runtimeArgs', runtimeArgs);
-  if (runtimeArgs.mochaOptions.grep) { mochaInstance.grep(runtimeArgs.mochaOptions.grep) }
-  mochaInstance.options.invert = runtimeArgs.mochaOptions.grepInvert
+    //NEW allow runtime grep options to be used in server
+    if (runtimeArgs.mochaOptions.grep) { mochaInstance.grep(runtimeArgs.mochaOptions.grep) }
+    mochaInstance.options.invert = runtimeArgs.mochaOptions.grepInvert
 
-  mochaInstance.run((failureCount) => {
-    exitIfDone('server', failureCount);
-  });
+    mochaInstance.run((failureCount) => {
+      exitIfDone('server', failureCount);
+    });
+  }
+
+  if(!shouldRunServerTests){
+    exitIfDone('server', 0);
+  }
 
   // Simultaneously start headless browser to run the client tests
   if (shouldRunClientTests) {
