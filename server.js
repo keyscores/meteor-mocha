@@ -1,5 +1,8 @@
 import { mochaInstance } from 'meteor/practicalmeteor:mocha-core';
 import { startBrowser } from 'meteor/aldeed:browser-tests';
+import {} from './lib/collections'
+import { runtimeArgs } from './runtimeArgs'
+
 
 const reporter = process.env.SERVER_TEST_REPORTER || 'spec';
 
@@ -10,6 +13,12 @@ const shouldRunClientTests = !!process.env.TEST_BROWSER_DRIVER;
 Meteor.startup(() => {
   Meteor.settings.public = Meteor.settings.public || {};
   Meteor.settings.public.CLIENT_TEST_REPORTER = process.env.CLIENT_TEST_REPORTER;
+
+  RuntimeArgs.remove({})//
+  RuntimeArgs.insert(runtimeArgs)
+  Meteor.publish('runtimeArgs', function runtimeArgsPub() {
+    return RuntimeArgs.find();
+  });
 });
 
 // Since intermingling client and server log lines would be confusing,
