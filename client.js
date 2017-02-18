@@ -11,17 +11,11 @@ function runTests() {
   // added to the app. Since both are testOnly packages, top-level client code in both
   // will run, potentially changing the reporter.
   Meteor.subscribe("runtimeArgs", {
-    onReady: function () { console.log("onReady runtimeArgs");
-          var runtimeArgs = RuntimeArgs.findOne()//
-    try{
+    onReady: function () {
 
-      if (runtimeArgs.mochaOptions.grep) { mocha.grep(runtimeArgs.mochaOptions.grep) }
-      if (runtimeArgs.mochaOptions.invert) { mocha.options.invert = runtimeArgs.mochaOptions.invert }
-
-    }catch(e){
-      console.log(e);
-    }
-
+    var runtimeArgs = RuntimeArgs.findOne()
+    if (runtimeArgs.mochaOptions.grep) { mocha.grep(runtimeArgs.mochaOptions.grep) }
+    if (runtimeArgs.mochaOptions.invert) { mocha.options.invert = runtimeArgs.mochaOptions.invert }
 
     mocha.reporter(Meteor.settings.public.CLIENT_TEST_REPORTER || 'spec');
 
