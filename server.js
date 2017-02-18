@@ -93,6 +93,11 @@ function start() {
   // used on this run.
   mochaInstance.reporter(reporter);
 
+  //NEW allow runtime grep options to be used in server
+  console.log('runtimeArgs', runtimeArgs);
+  if (runtimeArgs.mochaOptions.grep) { mochaInstance.grep(runtimeArgs.mochaOptions.grep) }
+  mochaInstance.options.invert = runtimeArgs.mochaOptions.grepInvert
+
   mochaInstance.run((failureCount) => {
     exitIfDone('server', failureCount);
   });
