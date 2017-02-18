@@ -1,4 +1,4 @@
-import { mochaInstance } from 'meteor/practicalmeteor:mocha-core';
+import { mochaInstance } from './core/server';
 import { startBrowser } from 'meteor/aldeed:browser-tests';
 
 const reporter = process.env.SERVER_TEST_REPORTER || 'spec';

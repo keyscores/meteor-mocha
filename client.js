@@ -1,5 +1,5 @@
 import './browser-shim.js';
-import { mocha } from 'meteor/practicalmeteor:mocha-core';
+import { mocha } from './core/client';
 
 // Run the client tests. Meteor calls the `runTests` function exported by
 // the driver package on the client.

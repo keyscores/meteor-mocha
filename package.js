@@ -6,9 +6,14 @@ Package.describe({
   testOnly: true,
 });
 
+Npm.depends({
+  mocha: '3.2.0',
+});
+
+
 Package.onUse(function (api) {
   api.use([
-    'practicalmeteor:mocha-core@1.0.0',
+    // 'practicalmeteor:mocha-core@1.0.0',
     'ecmascript@0.3.0',
   ]);
 
