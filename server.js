@@ -20,12 +20,15 @@ Meteor.startup(() => {
   // Meteor.settings.public.runtimeArgs = runtimeArgs
 
   console.log('runtimeArgs', runtimeArgs);
+
   RuntimeArgs.remove({})
   RuntimeArgs.insert(runtimeArgs)
 
   Meteor.publish('runtimeArgs', function runtimeArgsPub() {
     return RuntimeArgs.find();
   });
+
+  MochaTestLogs.remove({})
 
   Meteor.publish('mochaTestLogs', function runtimeArgsPub() {
     return MochaTestLogs.find();

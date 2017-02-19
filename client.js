@@ -2,10 +2,15 @@ import './browser-shim.js';
 import { mocha } from 'meteor/practicalmeteor:mocha-core';
 import './lib/collections';
 import { runHandler } from './runHandler';
+import './webreporter'
+// import './webreporter.html'
+// import './webreporter_template.html'
 
 // Run the client tests. Meteor calls the `runTests` function exported by
 // the driver package on the client.
 function runTests() {
+  // Blaze.render(Template.reporter, $( "body" )[0])
+
   // We need to set the reporter when the tests actually run. This ensures that the
   // correct reporter is used in the case where `dispatch:mocha-browser` is also
   // added to the app. Since both are testOnly packages, top-level client code in both
