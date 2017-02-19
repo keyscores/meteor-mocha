@@ -1,19 +1,3 @@
-// import { runner } from './server'
-//
-// if(Meteor.isServer){//
-//   Meteor.startup(function(){
-//     var testsPassed = 0;
-//
-//     var onTestPassedHandler = function(e){
-//       testsPassed++;
-//       console.log('e', e);
-//       console.log("onTestPassedHandler - title: " + e.title + " - total:" + testsPassed);
-//     };
-//
-//     runner.on("pass", onTestPassedHandler);
-//   });
-// }
-
 function runHandler(runner) {
   // mocha.reporters.Base.call(this, runner);
   var passes = 0;
