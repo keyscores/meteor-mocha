@@ -12,7 +12,9 @@ if (runtimeArgs.mochaOptions.serverReporter){
 const shouldRunClientTests = runtimeArgs.runnerOptions.runClient
 const shouldRunServerTests = runtimeArgs.runnerOptions.runServer
 
-// pass the current env settings to the client.
+const shouldRunInParallel = !!process.env.TEST_PARALLEL;
+
+// pass the current env settings to the client.//
 Meteor.startup(() => {
   // Meteor.settings.public = Meteor.settings.public || {};
   // Meteor.settings.public.runtimeArgs = runtimeArgs
@@ -84,48 +86,73 @@ function exitIfDone(type, failures) {
   }
 }
 
-// Before Meteor calls the `start` function, app tests will be parsed and loaded by Mocha
-function start() {
-  if(shouldRunClientTests && !runtimeArgs.runnerOptions.browserDriver){
-    console.log('SKIPPING CLIENT TESTS BECAUSE TEST_BROWSER_DRIVER ENVIRONMENT VARIABLE IS NOT SET');
-  }
-  // Run the server tests
-  if( shouldRunServerTests ){
-    printHeader('SERVER');
-
+function serverTests(cb){
+   if( shouldRunServerTests ){
     // We need to set the reporter when the tests actually run to ensure no conflicts with
     // other test driver packages that may be added to the app but are not actually being
     // used on this run.
     mochaInstance.reporter(serverReporter);
 
-    //NEW allow runtime grep options to be used in server
-    if (runtimeArgs.mochaOptions.grep) { mochaInstance.grep(runtimeArgs.mochaOptions.grep) }
-    mochaInstance.options.invert = runtimeArgs.mochaOptions.grepInvert
-
     mochaInstance.run((failureCount) => {
       exitIfDone('server', failureCount);
+      if (cb) { cb(); }
     });
-  }
+   }
+}
 
-  if(!shouldRunServerTests){
-    exitIfDone('server', 0);
-  }
-
-  // Simultaneously start headless browser to run the client tests
-  if (shouldRunClientTests) {
-    startBrowser({
-      stdout(data) {
-        clientLogBuffer(data.toString());
+function clientTests(cb){
+    if ( shouldRunClientTests ) {
+        startBrowser({
+     stdout(data) {
+       clientLogBuffer(data.toString());
       },
       stderr(data) {
         clientLogBuffer(data.toString());
       },
       done(failureCount) {
-        exitIfDone('client', failureCount);
-      },
+       exitIfDone('client', failureCount);
+       if (cb) { cb(); }
+     },
     });
-  } else {
-    exitIfDone('client', 0);
+  }
+}
+
+// Before Meteor calls the `start` function, app tests will be parsed and loaded by Mocha
+function start() {
+  if (!shouldRunClientTests) {
+    console.log('SKIPPING CLIENT TESTS BECAUSE TEST_BROWSER_DRIVER ENVIRONMENT VARIABLE IS NOT SET');
+  }
+
+  printHeader('SERVER');
+
+
+  // Run in PARALLEL or SERIES
+  // run in series is a better default IMHO since it avoids db and state conflicts for newbs
+  // if you want parallel you will know these risks
+  if (shouldRunInParallel){
+    console.log('Warning: Running in parallel can cause side-effects from state/db sharing');
+
+    serverTests()
+    // Simultaneously start headless browser to run the client tests
+    if (shouldRunClientTests) {
+      // printHeader('CLIENT');
+      clientTests();
+    } else {
+      exitIfDone('client', 0);
+    }//
+
+  } else { // run in series by default
+
+    printHeader('SERVER');
+    serverTests(function(){
+      // Simultaneously start headless browser to run the client tests
+      if (shouldRunClientTests) {
+        printHeader('CLIENT');
+        clientTests();
+      } else {
+        exitIfDone('client', 0);
+      }
+    })
   }
 }
 
