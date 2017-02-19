@@ -1,17 +1,31 @@
 import { mochaInstance } from 'meteor/practicalmeteor:mocha-core';
 import { startBrowser } from 'meteor/aldeed:browser-tests';
+import {} from './lib/collections'
+import { runtimeArgs } from './runtimeArgs'
 
-const reporter = process.env.SERVER_TEST_REPORTER || 'spec';
 
-// If TEST_BROWSER_DRIVER is not set, assume the app has only server tests
-const shouldRunClientTests = !!process.env.TEST_BROWSER_DRIVER;
+let serverReporter  = runtimeArgs.mochaOptions.reporter
+if (runtimeArgs.mochaOptions.serverReporter){
+  serverReporter  = runtimeArgs.mochaOptions.serverReporter
+}
+
+const shouldRunClientTests = runtimeArgs.runnerOptions.runClient
+const shouldRunServerTests = runtimeArgs.runnerOptions.runServer
 
 const shouldRunInParallel = !!process.env.TEST_PARALLEL;
 
 // pass the current env settings to the client.//
 Meteor.startup(() => {
-  Meteor.settings.public = Meteor.settings.public || {};
-  Meteor.settings.public.CLIENT_TEST_REPORTER = process.env.CLIENT_TEST_REPORTER;
+  // Meteor.settings.public = Meteor.settings.public || {};
+  // Meteor.settings.public.runtimeArgs = runtimeArgs
+
+  console.log('runtimeArgs', runtimeArgs);
+  RuntimeArgs.remove({})
+  RuntimeArgs.insert(runtimeArgs)
+
+  Meteor.publish('runtimeArgs', function runtimeArgsPub() {
+    return RuntimeArgs.find();
+  });
 });
 
 // Since intermingling client and server log lines would be confusing,
@@ -73,31 +87,34 @@ function exitIfDone(type, failures) {
 }
 
 function serverTests(cb){
-  // We need to set the reporter when the tests actually run to ensure no conflicts with
-  // other test driver packages that may be added to the app but are not actually being
-  // used on this run.
-  mochaInstance.reporter(reporter);
+   if( shouldRunServerTests ){
+    // We need to set the reporter when the tests actually run to ensure no conflicts with
+    // other test driver packages that may be added to the app but are not actually being
+    // used on this run.
+    mochaInstance.reporter(serverReporter);
 
-  mochaInstance.run((failureCount) => {
-    exitIfDone('server', failureCount);
-    if (cb) { cb(); }
-  });
-
+    mochaInstance.run((failureCount) => {
+      exitIfDone('server', failureCount);
+      if (cb) { cb(); }
+    });
+   }
 }
 
 function clientTests(cb){
-  startBrowser({
-    stdout(data) {
-      clientLogBuffer(data.toString());
-    },
-    stderr(data) {
-      clientLogBuffer(data.toString());
-    },
-    done(failureCount) {
-      exitIfDone('client', failureCount);
-      if (cb) { cb(); }
-    },
-  });
+    if ( shouldRunClientTests ) {
+        startBrowser({
+     stdout(data) {
+       clientLogBuffer(data.toString());
+      },
+      stderr(data) {
+        clientLogBuffer(data.toString());
+      },
+      done(failureCount) {
+       exitIfDone('client', failureCount);
+       if (cb) { cb(); }
+     },
+    });
+  }
 }
 
 // Before Meteor calls the `start` function, app tests will be parsed and loaded by Mocha
