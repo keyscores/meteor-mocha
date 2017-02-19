@@ -123,7 +123,7 @@ function start() {
     console.log('SKIPPING CLIENT TESTS BECAUSE TEST_BROWSER_DRIVER ENVIRONMENT VARIABLE IS NOT SET');
   }
 
-  printHeader('SERVER');
+
 
 
   // Run in PARALLEL or SERIES
@@ -132,6 +132,7 @@ function start() {
   if (shouldRunInParallel){
     console.log('Warning: Running in parallel can cause side-effects from state/db sharing');
 
+    printHeader('SERVER');
     serverTests()
     // Simultaneously start headless browser to run the client tests
     if (shouldRunClientTests) {
@@ -147,7 +148,7 @@ function start() {
     serverTests(function(){
       // Simultaneously start headless browser to run the client tests
       if (shouldRunClientTests) {
-        printHeader('CLIENT');
+        // printHeader('CLIENT');//
         clientTests();
       } else {
         exitIfDone('client', 0);
