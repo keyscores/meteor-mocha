@@ -57,7 +57,7 @@ function runHandler(runner) {//
   })
 
   runner.on('end', Meteor.bindEnvironment(function(eventDoc){
-    MochaTestLogs.insert({ event: 'end', data: summary });
+    MochaTestLogs.insert({ event: 'summary', data: summary });
   }))
 
   _.each(events, function(eachEventName){

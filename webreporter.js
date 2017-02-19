@@ -18,7 +18,17 @@ Template.reporter = Template.fromString(`
 
 Template.reporter.helpers({
   color: function(){
-    console.log("MochaTestLogs", JSON.stringify(MochaTestLogs.find({event:'end'}).count()))
+    var summary = MochaTestLogs.findOne({event:'summary'})
+
+    console.log("MochaTestLogs summary", JSON.stringify(MochaTestLogs.find({event:'summary'}).count()))
+    console.log("MochaTestLogs end", JSON.stringify(MochaTestLogs.find({event:'end'}).count()))
+
+    if ( summary && summary.data.fail > 0 ){
+      return 'red'
+    }
+    if ( summary && summary.data.fail === 0 ){
+      return 'green'
+    }
     return 'blue'
   }
 });
