@@ -4,9 +4,9 @@ import {} from './lib/collections'
 import { runtimeArgs } from './runtimeArgs'
 
 
-let serverReporter  = runtimeArgs.runnerOptions.reporter
-if (runtimeArgs.runnerOptions.serverReporter){
-  serverReporter  = runtimeArgs.runnerOptions.serverReporter
+let serverReporter  = runtimeArgs.mochaOptions.reporter
+if (runtimeArgs.mochaOptions.serverReporter){
+  serverReporter  = runtimeArgs.mochaOptions.serverReporter
 }
 
 const shouldRunClientTests = runtimeArgs.runnerOptions.runClient
