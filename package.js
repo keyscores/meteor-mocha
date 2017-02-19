@@ -9,7 +9,6 @@ Package.describe({
 Npm.depends({
   lodash: '4.17.4',
   fclone : '1.0.11',
-  cycle : '1.0.3'
 });
 
 Package.onUse(function (api) {

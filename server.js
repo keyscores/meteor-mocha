@@ -60,7 +60,7 @@ function exitIfDone(type, failures) {
     }
   }
 
-  if (callCount === 2) {
+  if (callCount === 2) {//
     if (shouldRunClientTests) {
       console.log('All client and server tests finished!\n');
       console.log('--------------------------------');

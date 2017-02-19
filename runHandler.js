@@ -1,8 +1,34 @@
 import './lib/collections'
 const fclone = require('fclone')
-const cycle = require('cycle')
+const _ = require('lodash')
 
-function runHandler(runner) {
+
+https://github.com/odynvolk/map-keys-deep-lodash/blob/master/index.js
+function renameKeysDeep(obj, cb) {
+  if (_.isUndefined(obj)) {
+    console.log('obj: ', obj);
+    throw new Error(`map-keys-deep-lodash expects an object but got ${typeof obj}`);
+  }
+
+  obj = _.mapKeys(obj, cb);
+
+  const res = {};
+
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const val = obj[key];
+      if (_.isObject(val)) {
+        res[key] = renameKeysDeep(val, cb);
+      } else {
+        res[key] = val;
+      }
+    }
+  }
+
+  return res;
+};
+
+function runHandler(runner) {//
 
   // Handle all moch runner events, and persist the raw output to db, use by ad hoc reporters.
 
@@ -18,22 +44,34 @@ function runHandler(runner) {
   // *   - `pass`  (test) test passed
   // *   - `fail`  (test, err) test failed
 
-  // var startListeners = function(){
-    // var events = ['start', 'end', 'suite', 'suite end', 'test', 'test end', 'hook', 'hook end', 'pass', 'fail']
-    //
-    // _.each( events , function( eachEventName ){
-    //   runner.on( eachEventName, Meteor.bindEnvironment(function( eventDoc ){
-    //     MochaTestLogs.insert( { type: eachEventName , data: fclone( eventDoc ) } )
-    //   }))
-    // })
+  var events = ['start', 'end', 'suite', 'suite end', 'test', 'test end', 'hook', 'hook end', 'pass', 'fail']
 
+  _.each( events , function( eachEventName ){
+    runner.on( eachEventName, Meteor.bindEnvironment(function( eventDoc ){
 
-    runner.on( 'test end', Meteor.bindEnvironment(function( eventDoc ){
+      // remove circular structures so we can persist as much of the raw data as possible
+      var data = fclone( eventDoc )
 
-      // var a = fclone( eventDoc )
-      // console.log( a);
-      MochaTestLogs.insert( { type: 'test' , data: cycle.decycle( eventDoc ) } )
+      // TODO: better way to do this?
+      // client generates errors due to the '$', on $ref and $events, need to rename.
+      if(Meteor.isClient){
+        if( data ){
+          var data = renameKeysDeep( data , (value, key) => {
+            if (key === "$ref") {
+              return "ref";
+            }
+            if (key === "$events") {
+              return "events";
+            }
+            return key;
+          });
+        }
+      }
+
+      MochaTestLogs.insert( { type: eachEventName , data: data } )
+
     }))
+  })
 }
 
 export { runHandler }
