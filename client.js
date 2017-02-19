@@ -1,5 +1,6 @@
 import './browser-shim.js';
 import { mocha } from 'meteor/practicalmeteor:mocha-core';
+import { runHandler } from './runHandler'
 
 // Run the client tests. Meteor calls the `runTests` function exported by
 // the driver package on the client.
@@ -13,11 +14,13 @@ function runTests() {
   // These `window` properties are all used by the client testing script in the
   // browser-tests package to know what is happening.
   window.testsAreRunning = true;
-  mocha.run(failures => {
+  var runner = mocha.run(failures => {
     window.testsAreRunning = false;
     window.testFailures = failures;
     window.testsDone = true;
   });
+
+  runHandler( runner )
 }
 
 export { runTests };

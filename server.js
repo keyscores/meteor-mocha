@@ -1,5 +1,6 @@
 import { mochaInstance } from 'meteor/practicalmeteor:mocha-core';
 import { startBrowser } from 'meteor/aldeed:browser-tests';
+import { runHandler } from './runHandler'
 
 const reporter = process.env.SERVER_TEST_REPORTER || 'spec';
 
@@ -84,9 +85,25 @@ function start() {
   // used on this run.
   mochaInstance.reporter(reporter);
 
-  mochaInstance.run((failureCount) => {
+  var runner = mochaInstance.run((failureCount) => {
     exitIfDone('server', failureCount);
   });
+
+  runHandler( runner )//
+
+
+
+
+// var runner = mocha.run();
+// var testsPassed = 0;
+//
+// var onTestPassedHandler = function(e){
+//   testsPassed++;
+//   console.log('e', e);
+//   console.log("onTestPassedHandler - title: " + e.title + " - total:" + testsPassed);
+// };
+//
+// runner.on("pass", onTestPassedHandler);
 
   // Simultaneously start headless browser to run the client tests
   if (shouldRunClientTests) {
@@ -106,4 +123,4 @@ function start() {
   }
 }
 
-export { start };
+export { start, runner };
