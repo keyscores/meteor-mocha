@@ -9,6 +9,12 @@ const shouldRunClientTests = !!process.env.TEST_BROWSER_DRIVER;
 
 // pass the current env settings to the client.
 Meteor.startup(() => {
+
+  MochaTestLogs.remove({})
+  Meteor.publish('mochaTestLogs', function mochaTestLogsPub() {
+    return MochaTestLogs.find();
+  });
+
   Meteor.settings.public = Meteor.settings.public || {};
   Meteor.settings.public.CLIENT_TEST_REPORTER = process.env.CLIENT_TEST_REPORTER;
 });
@@ -38,6 +44,7 @@ let callCount = 0;
 let clientFailures = 0;
 let serverFailures = 0;
 function exitIfDone(type, failures) {
+
   callCount++;
   if (type === 'client') {
     clientFailures = failures;
@@ -107,6 +114,7 @@ function start() {
 
   // Simultaneously start headless browser to run the client tests
   if (shouldRunClientTests) {
+
     startBrowser({
       stdout(data) {
         clientLogBuffer(data.toString());

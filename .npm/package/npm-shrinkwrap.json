@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "cycle": {
+      "version": "1.0.3",
+      "resolved": "https://registry.npmjs.org/cycle/-/cycle-1.0.3.tgz",
+      "from": "cycle@1.0.3"
+    },
+    "fclone": {
+      "version": "1.0.11",
+      "resolved": "https://registry.npmjs.org/fclone/-/fclone-1.0.11.tgz",
+      "from": "fclone@1.0.11"
+    },
+    "lodash": {
+      "version": "4.17.4",
+      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.17.4.tgz",
+      "from": "lodash@4.17.4"
+    }
+  }
+}
