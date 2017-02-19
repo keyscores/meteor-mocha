@@ -26,6 +26,10 @@ Meteor.startup(() => {
   Meteor.publish('runtimeArgs', function runtimeArgsPub() {
     return RuntimeArgs.find();
   });
+
+  Meteor.publish('mochaTestLogs', function runtimeArgsPub() {
+    return MochaTestLogs.find();
+  });
 });
 
 // Since intermingling client and server log lines would be confusing,

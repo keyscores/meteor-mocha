@@ -6,6 +6,11 @@ Package.describe({
   testOnly: true,
 });
 
+Npm.depends({
+  lodash: '4.17.4',
+  fclone : '1.0.11',
+});
+
 Package.onUse(function (api) {
   api.use([
     'practicalmeteor:mocha-core@1.0.0',
