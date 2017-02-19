@@ -6,7 +6,6 @@ const _ = require('lodash')
 https://github.com/odynvolk/map-keys-deep-lodash/blob/master/index.js
 function renameKeysDeep(obj, cb) {
   if (_.isUndefined(obj)) {
-    console.log('obj: ', obj);
     throw new Error(`map-keys-deep-lodash expects an object but got ${typeof obj}`);
   }
 
@@ -46,17 +45,17 @@ function runHandler(runner) {//
 
   var events = ['start', 'end', 'suite', 'suite end', 'test', 'test end', 'hook', 'hook end', 'pass', 'fail']
 
-  _.each( events , function( eachEventName ){
-    runner.on( eachEventName, Meteor.bindEnvironment(function( eventDoc ){
+  _.each(events, function(eachEventName){
+    runner.on(eachEventName, Meteor.bindEnvironment(function(eventDoc){
 
       // remove circular structures so we can persist as much of the raw data as possible
-      var data = fclone( eventDoc )
-
-      // TODO: better way to do this?
-      // client generates errors due to the '$', on $ref and $events, need to rename.
-      if(Meteor.isClient){
-        if( data ){
-          var data = renameKeysDeep( data , (value, key) => {
+      var data = fclone(eventDoc)
+      
+      if( data ){
+        // TODO: better way to do this?
+        // client generates errors due to the '$', on $ref and $events, need to rename.
+        if(Meteor.isClient){
+          var data = renameKeysDeep(data, (value, key) => {
             if (key === "$ref") {
               return "ref";
             }
@@ -66,10 +65,9 @@ function runHandler(runner) {//
             return key;
           });
         }
+
+        MochaTestLogs.insert({ type: eachEventName , data: data });
       }
-
-      MochaTestLogs.insert( { type: eachEventName , data: data } )
-
     }))
   })
 }
