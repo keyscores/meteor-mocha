@@ -49,6 +49,14 @@ To run in watch mode, restarting as you change files, add `TEST_WATCH=1` before 
 
 NOTE: Watch mode does not properly rerun client tests if you change only client code. To work around this, you can add or remove whitespace from a server file, and that will trigger both server and client tests to rerun.
 
+### Run in parallel
+
+By default dispatch:mocha will run in series. This is a safety mechanism since running a client test and server test which depend on DB state may have side-effects.
+
+If you design your client and server tests to not share state, then you can run tests faster.
+
+Run in parallel simply by exporting the environment variable `TEST_PARALLEL=1` or `TEST_PARALLEL=true` before running.
+
 ### Run with a different server reporter
 
 The default Mocha reporter for server tests is the "spec" reporter. You can set the `SERVER_TEST_REPORTER` environment variable to change it.
