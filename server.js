@@ -1,4 +1,4 @@
-import { mochaInstance } from 'meteor/practicalmeteor:mocha-core';
+import { mochaInstance } from './core/server';
 import { startBrowser } from 'meteor/aldeed:browser-tests';
 import {} from './lib/collections'
 import { runHandler } from './runHandler';

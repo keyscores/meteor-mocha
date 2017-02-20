@@ -1,5 +1,5 @@
 import './browser-shim.js';
-import { mocha } from 'meteor/practicalmeteor:mocha-core';
+import { mocha } from './core/client';
 import './lib/collections';
 import { runHandler } from './runHandler';
 import './webreporter'
