@@ -3,8 +3,6 @@ import { mocha } from 'meteor/practicalmeteor:mocha-core';
 import './lib/collections';
 import { runHandler } from './runHandler';
 import './webreporter'
-// import './webreporter.html'
-// import './webreporter_template.html'
 
 // Run the client tests. Meteor calls the `runTests` function exported by
 // the driver package on the client.

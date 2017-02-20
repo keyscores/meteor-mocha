@@ -3,6 +3,14 @@ import { Template } from 'meteor/templating'
 
 if(Meteor.isClient){
   Meteor.startup(function(){
+
+    // TODO: should run again when page refreshes,
+    // generating TypeError: Cannot read property 'call' of undefined
+    // Meteor.call("runAllTests", function(err,res){
+    //   console.log('err', err);
+    //   console.log('res', res);
+    // })
+
     Blaze.render(Template.reporter, $( "body" )[0])
   });
 }
@@ -72,8 +80,6 @@ Template.reporter = Template.fromString(`
                           {{>eachTest this }}
                         {{/each}}
                       {{/each}}
-
-
                     </div>
                 </div>
               </div>
