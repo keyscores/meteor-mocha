@@ -1,6 +1,7 @@
 import { mochaInstance } from 'meteor/practicalmeteor:mocha-core';
 import { startBrowser } from 'meteor/aldeed:browser-tests';
 import {} from './lib/collections'
+import { runHandler } from './runHandler';
 import { runtimeArgs } from './runtimeArgs'
 
 
@@ -9,12 +10,14 @@ if (runtimeArgs.mochaOptions.serverReporter){
   serverReporter  = runtimeArgs.mochaOptions.serverReporter
 }
 
+// TODO: if you chose not to run client tests, but open a browser the tests will run.
+// set a window variable in browser test which would not occurr in regular browser
 const shouldRunClientTests = runtimeArgs.runnerOptions.runClient
 const shouldRunServerTests = runtimeArgs.runnerOptions.runServer
 
-const shouldRunInParallel = !!process.env.TEST_PARALLEL;
+const shouldRunInParallel = runtimeArgs.runnerOptions.runParallel;
 
-// pass the current env settings to the client.//
+// pass the current env settings to the client.
 Meteor.startup(() => {
   // Meteor.settings.public = Meteor.settings.public || {};
   // Meteor.settings.public.runtimeArgs = runtimeArgs
@@ -29,6 +32,7 @@ Meteor.startup(() => {
   });
 
   MochaTestLogs.remove({})
+  Meteor.settings.public.summaryTestID = MochaTestLogs.insert({ event: 'summary', pass: 0 , fail: 0, count: 0 });
 
   Meteor.publish('mochaTestLogs', function runtimeArgsPub() {
     return MochaTestLogs.find();
@@ -100,10 +104,13 @@ function serverTests(cb){
     // used on this run.
     mochaInstance.reporter(serverReporter);
 
-    mochaInstance.run((failureCount) => {
+    var runner = mochaInstance.run((failureCount) => {
       exitIfDone('server', failureCount);
       if (cb) { cb(); }
     });
+
+    runHandler( runner )
+
    }
 }
 
@@ -126,7 +133,7 @@ function clientTests(cb){
 
 // Before Meteor calls the `start` function, app tests will be parsed and loaded by Mocha
 function start() {
-  if (!shouldRunClientTests) {
+  if (shouldRunClientTests && runtimeArgs.runnerOptions.browserDriver) {
     console.log('SKIPPING CLIENT TESTS BECAUSE TEST_BROWSER_DRIVER ENVIRONMENT VARIABLE IS NOT SET');
   }
 

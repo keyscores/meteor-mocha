@@ -17,7 +17,8 @@ runtimeArgs.runnerOptions = {
   runClient: runClient,
   runServer: runServer,
   browserDriver: process.env.TEST_BROWSER_DRIVER,
-  testWatch: process.env.TEST_WATCH
+  testWatch: process.env.TEST_WATCH,
+  runParallel:  !!process.env.TEST_PARALLEL
 }
 
 runtimeArgs.mochaOptions = {

@@ -15,7 +15,8 @@ Package.onUse(function (api) {
   api.use([
     'practicalmeteor:mocha-core@1.0.0',
     'ecmascript@0.3.0',
-    'numtel:template-from-string@0.1.0'
+    'numtel:template-from-string@0.1.0',
+    'bioduds:uikit3@1.1.6'
   ]);
 
   api.use([

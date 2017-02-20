@@ -45,19 +45,23 @@ function runHandler(runner) {//
 
   var events = ['start', 'end', 'suite', 'suite end', 'test', 'test end', 'hook', 'hook end', 'pass', 'fail']
 
-  var summary = { pass: 0 , fail: 0, count: 0 }
+  console.log('Meteor.settings.public.summaryTestID', Meteor.settings.public.summaryTestID);
+  // var summary = { pass: 0 , fail: 0, count: 0 }
   runner.on('pass', function(eventDoc){
-    summary.count = summary.count++
-    summary.pass = summary.pass++
+    MochaTestLogs.update({ _id: Meteor.settings.public.summaryTestID } , { $inc:{ pass: 1, count: 1 } })
   })
 
   runner.on('fail', function(eventDoc){
-    summary.count = summary.count++
-    summary.fail = summary.fail++
+    MochaTestLogs.update({ _id: Meteor.settings.public.summaryTestID } , { $inc:{ fail: 1, count: 1 } })
   })
 
   runner.on('end', Meteor.bindEnvironment(function(eventDoc){
-    MochaTestLogs.insert({ event: 'summary', data: summary });
+    console.log('Mocha Completed',   MochaTestLogs.find({environment: 'server'}).count()); //
+
+    // console.log('Mocha Completed',  MochaTestLogs.find({ environment: 'server' , event:'suite'}).count() ); //
+
+
+
   }))
 
   _.each(events, function(eachEventName){
