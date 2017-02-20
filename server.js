@@ -53,9 +53,18 @@ function clientLogBuffer(line) {
 }
 
 function printHeader(type) {
-  console.log('\n--------------------------------');
-  console.log(`----- RUNNING ${type} TESTS -----`);
-  console.log('--------------------------------\n');
+  const lines = [
+    '\n--------------------------------',
+    `----- RUNNING ${type} TESTS -----`,
+    '--------------------------------\n',
+  ];
+  lines.forEach(line => {
+    if (type === 'CLIENT') {
+      clientLogBuffer(line);
+    } else {
+      console.log(line);
+    }
+  });
 }
 
 let callCount = 0;
@@ -69,7 +78,6 @@ function exitIfDone(type, failures) {
     serverFailures = failures;
     serverTestsDone = true;
     if (shouldRunClientTests) {
-      printHeader('CLIENT');
       clientLines.forEach((line) => {
         // printing and removing the extra new-line character. The first was added by the client log, the second here.
         console.log(line.replace(/\n$/, ''));
@@ -98,26 +106,30 @@ function exitIfDone(type, failures) {
 }
 
 function serverTests(cb){
-   if( shouldRunServerTests ){
-    // We need to set the reporter when the tests actually run to ensure no conflicts with
-    // other test driver packages that may be added to the app but are not actually being
-    // used on this run.
-    mochaInstance.reporter(serverReporter);
+  printHeader('SERVER');
 
-    var runner = mochaInstance.run((failureCount) => {
-      exitIfDone('server', failureCount);
-      if (cb) { cb(); }
-    });
+  if( shouldRunServerTests ){
+  // We need to set the reporter when the tests actually run to ensure no conflicts with
+  // other test driver packages that may be added to the app but are not actually being
+  // used on this run.
+  mochaInstance.reporter(serverReporter);
 
-    runHandler( runner )
+  var runner = mochaInstance.run((failureCount) => {
+    exitIfDone('server', failureCount);
+    if (cb) { cb(); }
+  });
 
-   }
+  runHandler( runner )
+
+  }
 }
 
 function clientTests(cb){
-    if ( shouldRunClientTests ) {
-        startBrowser({
-     stdout(data) {
+  printHeader('CLIENT');
+
+  if ( shouldRunClientTests ) {
+    startBrowser({
+      stdout(data) {
        clientLogBuffer(data.toString());
       },
       stderr(data) {
@@ -126,7 +138,7 @@ function clientTests(cb){
       done(failureCount) {
        exitIfDone('client', failureCount);
        if (cb) { cb(); }
-     },
+      },
     });
   }
 }
@@ -147,22 +159,18 @@ Meteor.methods({
       if (shouldRunInParallel){
         console.log('Warning: Running in parallel can cause side-effects from state/db sharing');
 
-        printHeader('SERVER');
         serverTests()
         // Simultaneously start headless browser to run the client tests
         if (shouldRunClientTests) {
-          // printHeader('CLIENT');
           clientTests();
         } else {
           exitIfDone('client', 0);
         }//
 
       } else { // run in series by default
-        printHeader('SERVER');
         serverTests(function(){
           // Simultaneously start headless browser to run the client tests
           if (shouldRunClientTests) {
-            // printHeader('CLIENT');//
             clientTests();
           } else {
             exitIfDone('client', 0);
