@@ -40,6 +40,11 @@
       "resolved": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz",
       "from": "escape-string-regexp@1.0.5"
     },
+    "fclone": {
+      "version": "1.0.11",
+      "resolved": "https://registry.npmjs.org/fclone/-/fclone-1.0.11.tgz",
+      "from": "fclone@1.0.11"
+    },
     "fs.realpath": {
       "version": "1.0.0",
       "resolved": "https://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz",
@@ -79,6 +84,11 @@
       "version": "3.3.2",
       "resolved": "https://registry.npmjs.org/json3/-/json3-3.3.2.tgz",
       "from": "json3@3.3.2"
+    },
+    "lodash": {
+      "version": "4.17.4",
+      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.17.4.tgz",
+      "from": "lodash@4.17.4"
     },
     "lodash._baseassign": {
       "version": "3.2.0",
@@ -169,16 +179,6 @@
       "version": "1.0.2",
       "resolved": "https://registry.npmjs.org/wrappy/-/wrappy-1.0.2.tgz",
       "from": "wrappy@>=1.0.0 <2.0.0"
-
-    "fclone": {
-      "version": "1.0.11",
-      "resolved": "https://registry.npmjs.org/fclone/-/fclone-1.0.11.tgz",
-      "from": "fclone@1.0.11"
-    },
-    "lodash": {
-      "version": "4.17.4",
-      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.17.4.tgz",
-      "from": "lodash@4.17.4"
     }
   }
 }

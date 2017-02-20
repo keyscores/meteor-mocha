@@ -125,6 +125,12 @@ function serverTests(cb){
 }
 
 function clientTests(cb){
+  if (shouldRunClientTests && !runtimeArgs.runnerOptions.browserDriver) {
+    console.log('SKIPPING CLIENT TESTS BECAUSE TEST_BROWSER_DRIVER ENVIRONMENT VARIABLE IS NOT SET');
+    exitIfDone('client', 0);
+    return;
+  }
+
   printHeader('CLIENT');
 
   if ( shouldRunClientTests ) {
@@ -150,32 +156,18 @@ Meteor.methods({
       MochaTestLogs.remove({})//
       Meteor.settings.public.summaryTestID = MochaTestLogs.insert({ event: 'summary', pass: 0 , fail: 0, count: 0 });
 
-      if (shouldRunClientTests && !runtimeArgs.runnerOptions.browserDriver) {
-        console.log('SKIPPING CLIENT TESTS BECAUSE TEST_BROWSER_DRIVER ENVIRONMENT VARIABLE IS NOT SET');
-      }
       // Run in PARALLEL or SERIES
       // run in series is a better default IMHO since it avoids db and state conflicts for newbs
       // if you want parallel you will know these risks
       if (shouldRunInParallel){
         console.log('Warning: Running in parallel can cause side-effects from state/db sharing');
-
-        serverTests()
         // Simultaneously start headless browser to run the client tests
-        if (shouldRunClientTests) {
-          clientTests();
-        } else {
-          exitIfDone('client', 0);
-        }//
-
+        serverTests();
+        clientTests();
       } else { // run in series by default
-        serverTests(function(){
-          // Simultaneously start headless browser to run the client tests
-          if (shouldRunClientTests) {
-            clientTests();
-          } else {
-            exitIfDone('client', 0);
-          }
-        })
+        serverTests(() => {
+          clientTests();
+        });
       }
     }
 
