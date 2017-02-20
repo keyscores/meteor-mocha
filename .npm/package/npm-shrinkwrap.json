@@ -169,6 +169,16 @@
       "version": "1.0.2",
       "resolved": "https://registry.npmjs.org/wrappy/-/wrappy-1.0.2.tgz",
       "from": "wrappy@>=1.0.0 <2.0.0"
+
+    "fclone": {
+      "version": "1.0.11",
+      "resolved": "https://registry.npmjs.org/fclone/-/fclone-1.0.11.tgz",
+      "from": "fclone@1.0.11"
+    },
+    "lodash": {
+      "version": "4.17.4",
+      "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.17.4.tgz",
+      "from": "lodash@4.17.4"
     }
   }
 }
