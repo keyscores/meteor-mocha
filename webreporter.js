@@ -20,7 +20,7 @@ if(Meteor.isClient){
 
 Template.eachTest = Template.fromString(`
   <div>
-      <p class="uk-text-left">
+      <p class="uk-text-left eachTitle" data-title="{{this.data.title}}">
         <span style="{{#if icon this.data.state }} color: #84BF99 {{else}} color: #F37996 {{/if}}"> {{#if icon this.data.state }} &bull; {{else}} &#10005; {{/if}} </span> {{ this.data.title }}
       </p>
   </div>
@@ -40,12 +40,43 @@ Template.eachTest.helpers({
 });
 
 Template.eachTest.events({
-  "click .eachTest": function(event, template){
+  "click .eachTitle": function(event, template){
     const target = event.currentTarget
     var keyword = $( target ).data( "title" )
-    Session.set("grepString", keyword)
+    Session.set('grepString', keyword)
+    console.log('keyword', keyword);
+    console.log('grepString', Session.get('grepString') )
   }
 });
+
+Template.runner = Template.fromString(`
+  <h4> {{caps this.env}} </h4>
+  {{#each listSuites this.env}}
+    <span class="eachTitle"> {{this.data.title}} </span>
+    {{#each listTests ../env this.data.title }}
+      {{>eachTest this }}
+    {{/each}}
+  {{/each}}
+`)
+
+Template.runner.helpers({
+  listTests: function(env, parentTitle){
+    var query
+    if ( Session.get('filterState') !== 'all' ){
+      query =  Session.get('filterState')
+    }else{
+      query = { $exists: true}
+    }
+    return MochaTestLogs.find({ environment: env , event:'test end', 'data.state': query, 'data.parent.title': parentTitle }).fetch()
+  },
+  listSuites: function(env){
+    return MochaTestLogs.find({ environment: env , event:'suite'}).fetch()
+  },
+  caps : function (string) {
+     return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+});
+
 
 Template.report = Template.fromString(`
   <div class="uk-modal-dialog">
@@ -61,7 +92,7 @@ Template.report = Template.fromString(`
                 </div>
               </div>
               <div class="uk-width-1-2@s">
-                  <input class="uk-input" type="text" placeholder="Grep">
+                  <input class="uk-input" type="text" value="{{grepString}}" placeholder="Grep">
               </div>
               <div class="uk-width-1-6@s">
                 <label><input class="uk-checkbox" type="checkbox"> invert </label>
@@ -74,24 +105,13 @@ Template.report = Template.fromString(`
       <div class="uk-grid-collapse uk-child-width-expand@s uk-text-center" uk-grid>
           <div>
               <div class="uk-margin">
-                <h4> Client </h4>
-                {{#each listSuites 'client'}}
-                  {{this.data.title}}
-                  {{#each listTests 'client' this.data.title }}
-                    {{>eachTest this }}
-                  {{/each}}
-                {{/each}}
+                {{>runner env='client'}}
               </div>
           </div>
           <div>
               <div class="uk-margin">
-                <h4> Server </h4>
-                {{#each listSuites 'server'}}
-                  {{this.data.title}}
-                  {{#each listTests 'server' this.data.title }}
-                    {{>eachTest this }}
-                  {{/each}}
-                {{/each}}
+                {{>runner env='server'}}
+
               </div>
           </div>
         </div>
