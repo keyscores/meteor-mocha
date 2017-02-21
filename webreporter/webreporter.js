@@ -1,4 +1,4 @@
-import './lib/collections';
+import '../lib/collections';
 import { Template } from 'meteor/templating'
 import { Session } from 'meteor/session'
 
@@ -105,7 +105,7 @@ Template.report = Template.fromString(`
           <div>
             <form class="uk-grid-small" uk-grid>
               <div class="uk-width-1-2@s uk-flex">
-                <div>
+                <div id="rerun-tests">
                   <span class="uk-align-left uk-align-middle" uk-icon="icon: refresh"></span>
                 </div>
                 <div class="uk-button-group">
@@ -176,7 +176,11 @@ Template.report.events({
     _.debounce(function() {
        Session.set('grepString', text)
     }, 500)()
-  }
+  },
+  "click #rerun-tests": function(event, template){
+    //TODO: this is broken
+    Meteor.call("runAllTests")
+  },
 });
 
 
