@@ -1,8 +1,11 @@
 import './lib/collections';
 import { Template } from 'meteor/templating'
+import { Session } from 'meteor/session'
 
 if(Meteor.isClient){
   Meteor.startup(function(){
+    Session.set("filterState", 'all')
+
 
     // TODO: should run again when page refreshes,
     // generating TypeError: Cannot read property 'call' of undefined
@@ -11,7 +14,7 @@ if(Meteor.isClient){
     //   console.log('res', res);
     // })
 
-    Blaze.render(Template.reporter, $( "body" )[0])
+    Blaze.render(Template.wrapper, $( "body" )[0])
   });
 }
 
@@ -36,7 +39,67 @@ Template.eachTest.helpers({
   }
 });
 
-Template.reporter = Template.fromString(`
+Template.eachTest.events({
+  "click .eachTest": function(event, template){
+    const target = event.currentTarget
+    var keyword = $( target ).data( "title" )
+    Session.set("grepString", keyword)
+  }
+});
+
+Template.report = Template.fromString(`
+  <div class="uk-modal-dialog">
+      <div class="uk-modal-header">
+        <div class="uk-align-center uk-grid">
+          <div>
+            <form class="uk-grid-small" uk-grid>
+              <div class="uk-width-1-3@s">
+                <div class="uk-button-group">
+                  <button class="uk-button {{#if toggleButton 'passed'}}  uk-button-primary {{else}} uk-button-default {{/if}}  btn-test-state" data-state="passed">Passing</button>
+                  <button class="uk-button {{#if toggleButton 'all'}}  uk-button-primary {{else}} uk-button-default {{/if}}  btn-test-state" data-state="all">All</button>
+                  <button class="uk-button {{#if toggleButton 'failed'}}  uk-button-primary {{else}} uk-button-default {{/if}}  btn-test-state" data-state="failed">Failing</button>
+                </div>
+              </div>
+              <div class="uk-width-1-2@s">
+                  <input class="uk-input" type="text" placeholder="Grep">
+              </div>
+              <div class="uk-width-1-6@s">
+                <label><input class="uk-checkbox" type="checkbox"> invert </label>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="uk-modal-body" uk-overflow-auto>
+      <div class="uk-grid-collapse uk-child-width-expand@s uk-text-center" uk-grid>
+          <div>
+              <div class="uk-margin">
+                <h4> Client </h4>
+                {{#each listSuites 'client'}}
+                  {{this.data.title}}
+                  {{#each listTests 'client' this.data.title }}
+                    {{>eachTest this }}
+                  {{/each}}
+                {{/each}}
+              </div>
+          </div>
+          <div>
+              <div class="uk-margin">
+                <h4> Server </h4>
+                {{#each listSuites 'server'}}
+                  {{this.data.title}}
+                  {{#each listTests 'server' this.data.title }}
+                    {{>eachTest this }}
+                  {{/each}}
+                {{/each}}
+              </div>
+          </div>
+        </div>
+      </div>
+  </div>
+`);
+
+Template.wrapper = Template.fromString(`
   <div style="position: fixed; bottom: 0; left: 0; padding:10px" uk-toggle="target: #full-report-modal" >
     <div style="width: 50px;
     height: 50px;
@@ -46,67 +109,17 @@ Template.reporter = Template.fromString(`
     background: {{color}};"></div>
 
     <div id="full-report-modal" class="uk-modal-container" uk-modal>
-        <div class="uk-modal-dialog">
-            <div class="uk-modal-header">
-              <div class="uk-align-center uk-grid">
-                <div>
-                  <form class="uk-grid-small" uk-grid>
-                    <div class="uk-width-1-3@s">
-                      <div class="uk-button-group">
-                        <button class="uk-button uk-button-default">Passing</button>
-                        <button class="uk-button uk-button-default">All</button>
-                        <button class="uk-button uk-button-default">Failing</button>
-                      </div>
-                    </div>
-                    <div class="uk-width-1-2@s">
-                        <input class="uk-input" type="text" placeholder="Grep">
-                    </div>
-                    <div class="uk-width-1-6@s">
-                      <label><input class="uk-checkbox" type="checkbox"> invert </label>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-            <div class="uk-modal-body" uk-overflow-auto>
-            <div class="uk-grid-collapse uk-child-width-expand@s uk-text-center" uk-grid>
-                <div>
-
-                    <div class="uk-margin">
-                      <h4> Client </h4>
-
-                      {{#each listSuites 'client'}}
-                        {{this.data.title}}
-                        {{#each listTests 'client' this.data.title }}
-                          {{>eachTest this }}
-                        {{/each}}
-                      {{/each}}
-                    </div>
-                </div>
-                <div>
-                    <div class="uk-margin">
-                      <h4> Server </h4>
-                      {{#each listSuites 'server'}}
-                        {{this.data.title}}
-                        {{#each listTests 'server' this.data.title }}
-                          {{>eachTest this }}
-                        {{/each}}
-                      {{/each}}
-                    </div>
-                </div>
-              </div>
-            </div>
-        </div>
+      {{>report}}
     </div>
   </div>
 `);
 
 //
-Template.name.onRendered = function(){
-  UIkit.modal('#my-id', {});
+Template.wrapper.rendered = function(){
+  UIkit.modal('#full-report-modal', {});
 }
 
-Template.reporter.helpers({
+Template.wrapper.helpers({
   color: function(){
     var summary = MochaTestLogs.findOne({event:'summary'})
     console.log('summary', summary);
@@ -121,15 +134,43 @@ Template.reporter.helpers({
       return '#84BF99' //green
     }
     return '#4BC7EA' //blue
-  },
+  }
+});
+
+Template.report.helpers({
   listTests: function(env, parentTitle){
-    return MochaTestLogs.find({ environment: env , event:'test end', 'data.parent.title': parentTitle }).fetch()
+    var query
+    if ( Session.get('filterState') !== 'all' ){
+      query =  Session.get('filterState')
+    }else{
+      query = { $exists: true}
+    }
+    return MochaTestLogs.find({ environment: env , event:'test end', 'data.state': query, 'data.parent.title': parentTitle }).fetch()
   },
   listSuites: function(env){
     return MochaTestLogs.find({ environment: env , event:'suite'}).fetch()
+  },
+  grepString: function(obj){
+    return Session.get('grepString')
+  },
+  toggleButton: function(type){
+    if (type === Session.get('filterState') ){
+      return true
+    }
+    return false
   },
   stringify: function(obj){
     return JSON.stringify( obj )
   },
 
+});
+
+
+Template.report.events({
+  "click .btn-test-state": function(event, template){
+    event.preventDefault()
+    const target = event.currentTarget
+    var state = $( target ).data( "state" )
+    Session.set("filterState", state)
+  }
 });
