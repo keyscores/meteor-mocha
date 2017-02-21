@@ -45,16 +45,33 @@ function runHandler(runner) {//
 
   var events = ['start', 'end', 'suite', 'suite end', 'test', 'test end', 'hook', 'hook end', 'pass', 'fail']
 
+  console.log('Meteor.settings.public.summaryTestID', Meteor.settings.public.summaryTestID);
+  // var summary = { pass: 0 , fail: 0, count: 0 }
+  runner.on('pass', function(eventDoc){
+    MochaTestLogs.update({ _id: Meteor.settings.public.summaryTestID } , { $inc:{ pass: 1, count: 1 } })
+  })
+
+  runner.on('fail', function(eventDoc){
+    MochaTestLogs.update({ _id: Meteor.settings.public.summaryTestID } , { $inc:{ fail: 1, count: 1 } })
+  })
+
+  runner.on('end', Meteor.bindEnvironment(function(eventDoc){
+    console.log('Mocha Completed',   MochaTestLogs.find({environment: 'server'}).count()); //
+  }))
+
   _.each(events, function(eachEventName){
     runner.on(eachEventName, Meteor.bindEnvironment(function(eventDoc){
-
+      var insertPayload = {
+        event: eachEventName,
+        environment: 'server'
+      }
       // remove circular structures so we can persist as much of the raw data as possible
       var data = fclone(eventDoc)
-      
       if( data ){
         // TODO: better way to do this?
         // client generates errors due to the '$', on $ref and $events, need to rename.
         if(Meteor.isClient){
+          insertPayload.environment = 'client'
           var data = renameKeysDeep(data, (value, key) => {
             if (key === "$ref") {
               return "ref";
@@ -65,8 +82,8 @@ function runHandler(runner) {//
             return key;
           });
         }
-
-        MochaTestLogs.insert({ type: eachEventName , data: data });
+        insertPayload.data = data
+        MochaTestLogs.insert(insertPayload);
       }
     }))
   })
