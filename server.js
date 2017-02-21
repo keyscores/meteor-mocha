@@ -15,10 +15,6 @@ if (runtimeArgs.mochaOptions.serverReporter){
 }
 // pass the current env settings to the client.
 Meteor.startup(() => {
-  // Meteor.settings.public = Meteor.settings.public || {};
-  // Meteor.settings.public.runtimeArgs = runtimeArgs
-  console.log('runtimeArgs', runtimeArgs);
-
   Meteor.publish('mochaTestLogs', function runtimeArgsPub() {
     return MochaTestLogs.find();
   });
@@ -93,51 +89,55 @@ function exitIfDone(type, failures) {
 }
 
 function serverTests(cb){
-  printHeader('SERVER');
-
   if( shouldRunServerTests ){
-  // We need to set the reporter when the tests actually run to ensure no conflicts with
-  // other test driver packages that may be added to the app but are not actually being
-  // used on this run.
-  mochaInstance.reporter(serverReporter);
+    printHeader('SERVER');
+    // We need to set the reporter when the tests actually run to ensure no conflicts with
+    // other test driver packages that may be added to the app but are not actually being
+    // used on this run.
+    mochaInstance.reporter(serverReporter);
 
-  var runner = mochaInstance.run((failureCount) => {
-    exitIfDone('server', failureCount);
-    if (cb) { cb(); }
-  });
+    var runner = mochaInstance.run((failureCount) => {
+      exitIfDone('server', failureCount);
+      if (cb) { cb(); }
+    });
 
-  runHandler( runner )
-
+    runHandler( runner )
+  } else {
+    console.log('Skipping server tests');
   }
 }
 
 function clientTests(cb){
-  if (shouldRunClientTests && !runtimeArgs.runnerOptions.browserDriver) {
-    console.log('SKIPPING CLIENT TESTS BECAUSE TEST_BROWSER_DRIVER ENVIRONMENT VARIABLE IS NOT SET');
-    exitIfDone('client', 0);
-    return;
-  }
+  if (shouldRunClientTests){
+    if(!runtimeArgs.runnerOptions.browserDriver) {
+      console.log('SKIPPING CLIENT TESTS BECAUSE TEST_BROWSER_DRIVER ENVIRONMENT VARIABLE IS NOT SET');
+      exitIfDone('client', 0);
+      return;
+    }
+    printHeader('CLIENT');
 
-  printHeader('CLIENT');
-
-  if ( true ) {
-    startBrowser({
-      stdout(data) {
-       clientLogBuffer(data.toString());
-      },
-      stderr(data) {
-        clientLogBuffer(data.toString());
-      },
-      done(failureCount) {
-       exitIfDone('client', failureCount);
-       if (cb) { cb(); }
-      },
-    });
+    if ( true ) {
+      startBrowser({
+        stdout(data) {
+         clientLogBuffer(data.toString());
+        },
+        stderr(data) {
+          clientLogBuffer(data.toString());
+        },
+        done(failureCount) {
+         exitIfDone('client', failureCount);
+         if (cb) { cb(); }
+        },
+      });
+    }
+  } else {
+    console.log('Skipping client tests');
   }
 }
 
 Meteor.methods({
   runAllTests:function(){
+
     if (!Meteor.settings.public.running ){
       Meteor.settings.public.running = true
       MochaTestLogs.remove({})//
