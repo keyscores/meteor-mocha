@@ -104,18 +104,23 @@ Template.report = Template.fromString(`
         <div class="uk-align-center uk-grid">
           <div>
             <form class="uk-grid-small" uk-grid>
-              <div class="uk-width-1-3@s">
+              <div class="uk-width-1-2@s uk-flex">
+                <div>
+                  <span class="uk-align-left uk-align-middle" uk-icon="icon: refresh"></span>
+                </div>
                 <div class="uk-button-group">
                   <button class="uk-button {{#if toggleButton 'passed'}}  uk-button-primary {{else}} uk-button-default {{/if}}  btn-test-state" data-state="passed">Passing</button>
                   <button class="uk-button {{#if toggleButton 'all'}}  uk-button-primary {{else}} uk-button-default {{/if}}  btn-test-state" data-state="all">All</button>
                   <button class="uk-button {{#if toggleButton 'failed'}}  uk-button-primary {{else}} uk-button-default {{/if}}  btn-test-state" data-state="failed">Failing</button>
                 </div>
               </div>
-              <div class="uk-width-1-2@s">
+              <div class="uk-width-1-2@s uk-flex">
+                <div class="uk-width-3-4@s" >
                   <input class="uk-input" type="text" value="{{grepString}}" placeholder="Grep" id="grep-form">
-              </div>
-              <div class="uk-width-1-6@s">
-                <label><input class="uk-checkbox" type="checkbox"> invert </label>
+                </div>
+                <div class="uk-align-right">
+                  <label><input class="uk-checkbox" type="checkbox"> invert </label>
+                </div>
               </div>
             </form>
           </div>
@@ -165,11 +170,17 @@ Template.report.events({
     var state = $( target ).data( "state" )
     Session.set("filterState", state)
   },
-  'keydown #grep-form': function (event) {
+  'keyup #grep-form': function (event) {
+    const target = event.currentTarget;
+    const text = target.value;
+
     if(event.keyCode == 13){
-      const target = event.currentTarget;
-      const text = target.value;
+
       Session.set('grepString', text)
+    }else{
+      _.debounce(function() {
+         Session.set('grepString', text)
+      }, 500)()
     }
   }
 });
