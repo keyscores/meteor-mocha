@@ -1,5 +1,5 @@
 Package.describe({
-  name: "dispatch:mocha",
+  name: "keyscores:mocha",
   summary: "Run package or app tests with Mocha, using a headless browser for the client tests",
   git: "https://github.com/DispatchMe/meteor-mocha.git",
   version: '0.1.0',
