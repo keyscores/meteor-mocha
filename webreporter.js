@@ -48,11 +48,23 @@ Template.reporter = Template.fromString(`
     <div id="full-report-modal" class="uk-modal-container" uk-modal>
         <div class="uk-modal-dialog">
             <div class="uk-modal-header">
-              <div class="uk-align-center">
-                <div class="uk-button-group">
-                  <button class="uk-button uk-button-default">Passing</button>
-                  <button class="uk-button uk-button-default">All</button>
-                  <button class="uk-button uk-button-default">Failing</button>
+              <div class="uk-align-center uk-grid">
+                <div>
+                  <form class="uk-grid-small" uk-grid>
+                    <div class="uk-width-1-3@s">
+                      <div class="uk-button-group">
+                        <button class="uk-button uk-button-default">Passing</button>
+                        <button class="uk-button uk-button-default">All</button>
+                        <button class="uk-button uk-button-default">Failing</button>
+                      </div>
+                    </div>
+                    <div class="uk-width-1-2@s">
+                        <input class="uk-input" type="text" placeholder="Grep">
+                    </div>
+                    <div class="uk-width-1-6@s">
+                      <label><input class="uk-checkbox" type="checkbox"> invert </label>
+                    </div>
+                  </form>
                 </div>
               </div>
             </div>
@@ -60,7 +72,7 @@ Template.reporter = Template.fromString(`
             <div class="uk-grid-collapse uk-child-width-expand@s uk-text-center" uk-grid>
                 <div>
 
-                    <div class="uk-padding">
+                    <div class="uk-margin">
                       <h4> Client </h4>
 
                       {{#each listSuites 'client'}}
@@ -72,7 +84,7 @@ Template.reporter = Template.fromString(`
                     </div>
                 </div>
                 <div>
-                    <div class="uk-padding">
+                    <div class="uk-margin">
                       <h4> Server </h4>
                       {{#each listSuites 'server'}}
                         {{this.data.title}}
