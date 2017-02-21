@@ -21,7 +21,9 @@ if(Meteor.isClient){
 Template.eachTest = Template.fromString(`
   <div>
       <p class="uk-text-left eachTitle" data-title="{{this.data.title}}">
-        <span style="{{#if icon this.data.state }} color: #84BF99 {{else}} color: #F37996 {{/if}}"> {{#if icon this.data.state }} &bull; {{else}} &#10005; {{/if}} </span> {{ this.data.title }}
+        <span style="{{#if icon this.data.state }} color: #84BF99 {{else}} color: #F37996 {{/if}}">
+          {{#if icon this.data.state }} &nbsp; &bull; {{else}} &nbsp; &#10005; {{/if}}
+         </span> {{ this.data.title }}
       </p>
   </div>
 `)
@@ -39,44 +41,62 @@ Template.eachTest.helpers({
   }
 });
 
-Template.eachTest.events({
-  "click .eachTitle": function(event, template){
-    const target = event.currentTarget
-    var keyword = $( target ).data( "title" )
-    Session.set('grepString', keyword)
-    console.log('keyword', keyword);
-    console.log('grepString', Session.get('grepString') )
-  }
-});
-
 Template.runner = Template.fromString(`
-  <h4> {{caps this.env}} </h4>
+  <h5 class="uk-text-center"> {{caps this.env}} </h5>
   {{#each listSuites this.env}}
-    <span class="eachTitle"> {{this.data.title}} </span>
+    <p class="eachTitle"> {{this}} </p>
     {{#each listTests ../env this.data.title }}
       {{>eachTest this }}
     {{/each}}
   {{/each}}
 `)
 
+function filteredTests (env, parentTitle) {
+  if(!parentTitle){ parentTitle = { $exists: true}}
+  var stateQuery
+  if ( Session.get('filterState') !== 'all' ){
+    stateQuery =  Session.get('filterState')
+  }else{
+    stateQuery = { $exists: true}
+  }
+
+  var titleQuery
+  if ( Session.get('grepString') ){
+    titleQuery =  { $regex: Session.get('grepString'), $options: 'i' }
+  }else{
+    titleQuery = { $exists: true }
+  }
+
+  return MochaTestLogs.find({
+    environment: env,
+    event:'test end',
+    'data.state': stateQuery,
+    'data.title': titleQuery,
+    'data.parent.title': parentTitle
+  }).fetch()
+}
 Template.runner.helpers({
-  listTests: function(env, parentTitle){
-    var query
-    if ( Session.get('filterState') !== 'all' ){
-      query =  Session.get('filterState')
-    }else{
-      query = { $exists: true}
-    }
-    return MochaTestLogs.find({ environment: env , event:'test end', 'data.state': query, 'data.parent.title': parentTitle }).fetch()
-  },
   listSuites: function(env){
-    return MochaTestLogs.find({ environment: env , event:'suite'}).fetch()
+    return _.map( filteredTests(env), function(e){
+      return e.data.parent.title
+    });
+  },
+  listTests: function(env, parentTitle){
+    return filteredTests(env, parentTitle)
   },
   caps : function (string) {
      return string.charAt(0).toUpperCase() + string.slice(1);
   }
 });
 
+
+Template.eachTest.events({
+  "click .eachTitle": function(event, template){
+    const target = event.currentTarget
+    var keyword = $( target ).data( "title" )
+    Session.set('grepString', keyword)
+  }
+});
 
 Template.report = Template.fromString(`
   <div class="uk-modal-dialog">
@@ -92,7 +112,7 @@ Template.report = Template.fromString(`
                 </div>
               </div>
               <div class="uk-width-1-2@s">
-                  <input class="uk-input" type="text" value="{{grepString}}" placeholder="Grep">
+                  <input class="uk-input" type="text" value="{{grepString}}" placeholder="Grep" id="grep-form">
               </div>
               <div class="uk-width-1-6@s">
                 <label><input class="uk-checkbox" type="checkbox"> invert </label>
@@ -102,7 +122,7 @@ Template.report = Template.fromString(`
         </div>
       </div>
       <div class="uk-modal-body" uk-overflow-auto>
-      <div class="uk-grid-collapse uk-child-width-expand@s uk-text-center" uk-grid>
+      <div class="uk-grid-collapse uk-child-width-expand@s uk-text-left" uk-grid>
           <div>
               <div class="uk-margin">
                 {{>runner env='client'}}
@@ -118,6 +138,42 @@ Template.report = Template.fromString(`
       </div>
   </div>
 `);
+
+
+
+Template.report.helpers({
+  grepString: function(obj){
+    return Session.get('grepString')
+  },
+  toggleButton: function(type){
+    if (type === Session.get('filterState') ){
+      return true
+    }
+    return false
+  },
+  stringify: function(obj){
+    return JSON.stringify( obj )
+  },
+
+});
+
+
+Template.report.events({
+  "click .btn-test-state": function(event, template){
+    event.preventDefault()
+    const target = event.currentTarget
+    var state = $( target ).data( "state" )
+    Session.set("filterState", state)
+  },
+  'keydown #grep-form': function (event) {
+    if(event.keyCode == 13){
+      const target = event.currentTarget;
+      const text = target.value;
+      Session.set('grepString', text)
+    }
+  }
+});
+
 
 Template.wrapper = Template.fromString(`
   <div style="position: fixed; bottom: 0; left: 0; padding:10px" uk-toggle="target: #full-report-modal" >
@@ -154,43 +210,5 @@ Template.wrapper.helpers({
       return '#84BF99' //green
     }
     return '#4BC7EA' //blue
-  }
-});
-
-Template.report.helpers({
-  listTests: function(env, parentTitle){
-    var query
-    if ( Session.get('filterState') !== 'all' ){
-      query =  Session.get('filterState')
-    }else{
-      query = { $exists: true}
-    }
-    return MochaTestLogs.find({ environment: env , event:'test end', 'data.state': query, 'data.parent.title': parentTitle }).fetch()
-  },
-  listSuites: function(env){
-    return MochaTestLogs.find({ environment: env , event:'suite'}).fetch()
-  },
-  grepString: function(obj){
-    return Session.get('grepString')
-  },
-  toggleButton: function(type){
-    if (type === Session.get('filterState') ){
-      return true
-    }
-    return false
-  },
-  stringify: function(obj){
-    return JSON.stringify( obj )
-  },
-
-});
-
-
-Template.report.events({
-  "click .btn-test-state": function(event, template){
-    event.preventDefault()
-    const target = event.currentTarget
-    var state = $( target ).data( "state" )
-    Session.set("filterState", state)
   }
 });
