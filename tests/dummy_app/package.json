@@ -2,7 +2,7 @@
   "name": "experimental-meteor-mocha-electron",
   "private": true,
   "scripts": {
-    "test": "meteor npm install && TEST_BROWSER_DRIVER=nightmare meteor test --once --full-app --driver-package keyscores:mocha",
+    "test": "TEST_BROWSER_DRIVER=nightmare meteor test --once --full-app --driver-package keyscores:mocha",
     "watch": "TEST_WATCH=1 TEST_BROWSER_DRIVER=nightmare meteor test --full-app --driver-package keyscores:mocha",
     "debug": "TEST_WATCH=1 DEBUG='meteor-mocha:*' DEBUG_FD=1 DEBUG_COLORS=1 meteor test --full-app --driver-package keyscores:mocha"
   },
