@@ -39,6 +39,10 @@
       "version": "1.0.5",
       "resolved": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz",
       "from": "escape-string-regexp@1.0.5"
+    "cycle": {
+      "version": "1.0.3",
+      "resolved": "https://registry.npmjs.org/cycle/-/cycle-1.0.3.tgz",
+      "from": "cycle@1.0.3"
     },
     "fclone": {
       "version": "1.0.11",

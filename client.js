@@ -1,8 +1,8 @@
 import './browser-shim.js';
-import { mocha } from './core/client';
 import './lib/collections';
-import { runHandler } from './runHandler';
 import './webreporter/webreporter'
+import { mocha } from 'meteor/practicalmeteor:mocha-core';
+import { runHandler } from './runHandler'
 
 // Run the client tests. Meteor calls the `runTests` function exported by
 // the driver package on the client.

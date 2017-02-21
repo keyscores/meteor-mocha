@@ -57,11 +57,6 @@ function runHandler(runner) {//
 
   runner.on('end', Meteor.bindEnvironment(function(eventDoc){
     console.log('Mocha Completed',   MochaTestLogs.find({environment: 'server'}).count()); //
-
-    // console.log('Mocha Completed',  MochaTestLogs.find({ environment: 'server' , event:'suite'}).count() ); //
-
-
-
   }))
 
   _.each(events, function(eachEventName){
@@ -72,13 +67,11 @@ function runHandler(runner) {//
       }
       // remove circular structures so we can persist as much of the raw data as possible
       var data = fclone(eventDoc)
-
       if( data ){
         // TODO: better way to do this?
         // client generates errors due to the '$', on $ref and $events, need to rename.
         if(Meteor.isClient){
           insertPayload.environment = 'client'
-
           var data = renameKeysDeep(data, (value, key) => {
             if (key === "$ref") {
               return "ref";

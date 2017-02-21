@@ -4,6 +4,7 @@ import {} from './lib/collections'
 import { runHandler } from './runHandler';
 import { setArgs } from './runtimeArgs'
 
+
 let runtimeArgs = setArgs();
 
 const shouldRunClientTests = runtimeArgs.runnerOptions.runClient
@@ -15,6 +16,7 @@ if (runtimeArgs.mochaOptions.serverReporter){
 }
 // pass the current env settings to the client.
 Meteor.startup(() => {
+  MochaTestLogs.remove({})
   Meteor.publish('mochaTestLogs', function runtimeArgsPub() {
     return MochaTestLogs.find();
   });
@@ -54,6 +56,7 @@ let callCount = 0;
 let clientFailures = 0;
 let serverFailures = 0;
 function exitIfDone(type, failures) {
+
   callCount++;
   if (type === 'client') {
     clientFailures = failures;
@@ -68,7 +71,7 @@ function exitIfDone(type, failures) {
     }
   }
 
-  if (callCount === 2) {
+  if (callCount === 2) {//
     if (shouldRunClientTests) {
       console.log('All client and server tests finished!\n');
       console.log('--------------------------------');
@@ -166,4 +169,4 @@ function start() {
   Meteor.call("runAllTests")
 }
 
-export { start };
+export { start, runner };
