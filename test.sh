@@ -5,7 +5,7 @@ cd tests/dummy_app/
 meteor add dispatch:mocha
 meteor npm install
 
-# test only intentionally passing tests
+# test only intentionally passing tests.
 # find tests/dummy_app -name "*pass*.app-test.ignore" -exec bash -c 'mv "$1" "${1%.ignore}".js' - '{}' \;
 # find tests/dummy_app -name "*fail*.app-test.js" -exec bash -c 'mv "$1" "${1%.js}".ignore' - '{}' \;
 
