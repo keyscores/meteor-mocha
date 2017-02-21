@@ -2,35 +2,22 @@ import { mochaInstance } from './core/server';
 import { startBrowser } from 'meteor/aldeed:browser-tests';
 import {} from './lib/collections'
 import { runHandler } from './runHandler';
-import { runtimeArgs } from './runtimeArgs'
+import { setArgs } from './runtimeArgs'
 
+let runtimeArgs = setArgs();
 
+const shouldRunClientTests = runtimeArgs.runnerOptions.runClient
+const shouldRunServerTests = runtimeArgs.runnerOptions.runServer
+const shouldRunInParallel = runtimeArgs.runnerOptions.runParallel
 let serverReporter  = runtimeArgs.mochaOptions.reporter
 if (runtimeArgs.mochaOptions.serverReporter){
   serverReporter  = runtimeArgs.mochaOptions.serverReporter
 }
-
-// TODO: if you chose not to run client tests, but open a browser the tests will run.
-// set a window variable in browser test which would not occurr in regular browser
-const shouldRunClientTests = runtimeArgs.runnerOptions.runClient
-const shouldRunServerTests = runtimeArgs.runnerOptions.runServer
-
-const shouldRunInParallel = runtimeArgs.runnerOptions.runParallel;
-
 // pass the current env settings to the client.
 Meteor.startup(() => {
   // Meteor.settings.public = Meteor.settings.public || {};
   // Meteor.settings.public.runtimeArgs = runtimeArgs
-
   console.log('runtimeArgs', runtimeArgs);
-
-  RuntimeArgs.remove({})
-  RuntimeArgs.insert(runtimeArgs)
-
-  Meteor.publish('runtimeArgs', function runtimeArgsPub() {
-    return RuntimeArgs.find();
-  });
-
 
   Meteor.publish('mochaTestLogs', function runtimeArgsPub() {
     return MochaTestLogs.find();
@@ -133,7 +120,7 @@ function clientTests(cb){
 
   printHeader('CLIENT');
 
-  if ( shouldRunClientTests ) {
+  if ( true ) {
     startBrowser({
       stdout(data) {
        clientLogBuffer(data.toString());
@@ -175,6 +162,7 @@ Meteor.methods({
 });
 // Before Meteor calls the `start` function, app tests will be parsed and loaded by Mocha
 function start() {
+  // clientTests();
   Meteor.call("runAllTests")
 }
 
