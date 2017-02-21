@@ -173,15 +173,9 @@ Template.report.events({
   'keyup #grep-form': function (event) {
     const target = event.currentTarget;
     const text = target.value;
-
-    if(event.keyCode == 13){
-
-      Session.set('grepString', text)
-    }else{
-      _.debounce(function() {
-         Session.set('grepString', text)
-      }, 500)()
-    }
+    _.debounce(function() {
+       Session.set('grepString', text)
+    }, 500)()
   }
 });
 
