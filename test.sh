@@ -1,5 +1,5 @@
 #!/bin/sh
-echo "Placing root files into dummy_app for testing"
+echo "Placing root files into dummy_app for testing."
 rsync -av --relative --exclude='tests/' --exclude='.git/' --exclude='setup-tests.sh'  ./ tests/dummy_app/packages/meteor-mocha
 cd tests/dummy_app/
 meteor add dispatch:mocha
