@@ -107,3 +107,11 @@ A good best practice is to define these commands as run scripts in your app's `p
 ```
 
 And then run `npm run test-chrome`, etc.
+
+## Test this package
+
+This package contains a dummy meteor app for testing the package features. Run with:
+
+```bash
+$ bash test.sh
+```
