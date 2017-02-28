@@ -1,0 +1,18 @@
+{
+  "name": "meteor-mocha",
+  "version": "0.0.0",
+  "description": "Run package or app tests with Mocha, using a headless browser for the client tests",
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "author": "Dispatch (dispatch.me)",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-eslint": "7.1.1",
+    "eslint": "3.0.1",
+    "eslint-config-airbnb": "9.0.1",
+    "eslint-plugin-import": "1.10.2",
+    "eslint-plugin-jsx-a11y": "1.5.5",
+    "eslint-plugin-react": "5.2.2"
+  }
+}
