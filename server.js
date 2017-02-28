@@ -3,14 +3,9 @@ import { startBrowser } from 'meteor/aldeed:browser-tests';
 import { setArgs } from './runtimeArgs'
 
 let runtimeArgs = setArgs();
+const { mochaOptions, runnerOptions } = Meteor.settings.public.runtimeArgs || {};
+const { clientReporter, grep, invert, reporter } = mochaOptions || {};
 
-const shouldRunClientTests = runtimeArgs.runnerOptions.runClient
-const shouldRunServerTests = runtimeArgs.runnerOptions.runServer
-const shouldRunInParallel = runtimeArgs.runnerOptions.runParallel
-let serverReporter  = runtimeArgs.mochaOptions.reporter
-if (runtimeArgs.mochaOptions.serverReporter){
-  serverReporter  = runtimeArgs.mochaOptions.serverReporter
-}
 // Since intermingling client and server log lines would be confusing,
 // the idea here is to buffer all client logs until server tests have
 // finished running and then dump the buffer to the screen and continue
@@ -42,7 +37,7 @@ function exitIfDone(type, failures) {
   } else {
     serverFailures = failures;
     serverTestsDone = true;
-    if (shouldRunClientTests) {
+    if (runnerOptions.runClient) {
       printHeader('CLIENT');
       clientLines.forEach((line) => {
         // printing and removing the extra new-line character. The first was added by the client log, the second here.
@@ -52,7 +47,7 @@ function exitIfDone(type, failures) {
   }
 
   if (callCount === 2) {
-    if (shouldRunClientTests) {
+    if (runnerOptions.runClient) {
       console.log('All client and server tests finished!\n');
       console.log('--------------------------------');
       console.log(`SERVER FAILURES: ${serverFailures}`);
@@ -72,7 +67,7 @@ function exitIfDone(type, failures) {
 // Before Meteor calls the `start` function, app tests will be parsed and loaded by Mocha
 function start() {
   // Run the server tests
-  if (shouldRunClientTests && !runtimeArgs.browserDriver) {
+  if (runnerOptions.runClient && !runnerOptions.browserDriver) {
     printHeader('SERVER');
   } else {
     console.log('SKIPPING CLIENT TESTS BECAUSE TEST_BROWSER_DRIVER ENVIRONMENT VARIABLE IS NOT SET');
@@ -81,8 +76,8 @@ function start() {
   // We need to set the reporter when the tests actually run to ensure no conflicts with
   // other test driver packages that may be added to the app but are not actually being
   // used on this run.
-  if (shouldRunServerTests){
-    mochaInstance.reporter(serverReporter);
+  if (runnerOptions.runServer){
+    mochaInstance.reporter(mochaOptions.serverReporter || mochaOptions.reporter);
 
     mochaInstance.run((failureCount) => {
       exitIfDone('server', failureCount);
@@ -90,7 +85,7 @@ function start() {
   }
 
   // Simultaneously start headless browser to run the client tests
-  if (shouldRunClientTests) {
+  if (runnerOptions.runClient) {
     startBrowser({
       stdout(data) {
         clientLogBuffer(data.toString());
