@@ -2,15 +2,15 @@ import { mochaInstance } from 'meteor/practicalmeteor:mocha-core';
 import { startBrowser } from 'meteor/aldeed:browser-tests';
 import { setArgs } from './runtimeArgs'
 
-let runtimeArgs = setArgs();
+setArgs();
 const { mochaOptions, runnerOptions } = Meteor.settings.public.runtimeArgs || {};
 const { clientReporter, grep, invert, reporter } = mochaOptions || {};
-
 
 // Since intermingling client and server log lines would be confusing,
 // the idea here is to buffer all client logs until server tests have
 // finished running and then dump the buffer to the screen and continue
 // logging in real time after that if client tests are still running.
+
 let serverTestsDone = false;
 const clientLines = [];
 function clientLogBuffer(line) {
@@ -63,7 +63,9 @@ function exitIfDone(type, failures) {
       console.log(`CLIENT FAILURES: ${clientFailures}`);
       console.log('--------------------------------');
     }
-    if (shouldExitWhenDone) {
+
+    // if no env for TEST_WATCH, tests should exit when done
+    if (!runnerOptions.testWatch) {
       if (clientFailures + serverFailures > 0) {
         process.exit(1); // exit with non-zero status if there were failures
       } else {
